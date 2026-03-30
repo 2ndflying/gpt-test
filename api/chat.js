@@ -1,10 +1,9 @@
 export default async function handler(req, res) {
-  // CORS 설정
+  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // OPTIONS 요청 처리
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -19,19 +18,29 @@ export default async function handler(req, res) {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: message
+        model: "gpt-4o-mini",
+        input: [
+          {
+            role: "system",
+            content: "너는 마케팅 컨설턴트다. 핵심만 짧게 답해라."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        max_output_tokens: 150
       })
     });
 
     const data = await response.json();
 
     return res.status(200).json({
-      reply: data.output?.[0]?.content?.[0]?.text || "응답 오류"
+      reply: data.output?.[0]?.content?.[0]?.text || "응답 없음"
     });
 
   } catch (error) {
