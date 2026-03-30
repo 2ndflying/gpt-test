@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -13,7 +12,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, mode } = req.body;
+
+    let systemPrompt = "너는 마케팅 컨설턴트다. 핵심만 짧게 답해라.";
+
+    if (mode === "quick") {
+      systemPrompt = "너는 빠른 진단 전문가다. 한 문장으로 핵심만 말해라.";
+    }
+
+    if (mode === "sales") {
+      systemPrompt = "너는 매출 분석 전문가다. 숫자 기반으로 짧게 분석해라.";
+    }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -24,14 +33,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         input: [
-          {
-            role: "system",
-            content: "너는 마케팅 컨설턴트다. 핵심만 짧게 답해라."
-          },
-          {
-            role: "user",
-            content: message
-          }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
         ],
         max_output_tokens: 150
       })
